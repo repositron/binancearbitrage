@@ -1,0 +1,31 @@
+group 'binancearbitrage'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.0.2'
+    compile group: 'javax.websocket', name: 'javax.websocket-client-api', version: '1.1'
+   //compile group: 'org.glassfish.tyrus', name: 'tyrus-container-grizzly', version: '1.2.1'
+    compile group: 'org.glassfish.tyrus', name: 'tyrus-client', version: '1.13.1'
+    compile group: 'org.glassfish.tyrus', name: 'tyrus-container-grizzly-client', version: '1.13.1'
+    //json
+    compile group: 'org.glassfish', name: 'javax.json', version: '1.1.2'
+    compile group: 'org.glassfish.jersey.media', name: 'jersey-media-moxy', version: '2.26'
+    //compile group: 'com.binance.api', name: 'binance-api-client', version: '1.0.0'
+
+    compile files('jar/binance-api-client-1.0.0.jar')
+    // dependencies on binance-api-client-1.0.0.jar'
+    compile group: 'com.squareup.retrofit2', name: 'retrofit', version: '2.3.0'
+    compile group: 'com.squareup.retrofit2', name: 'converter-jackson', version: '2.3.0'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
+    compile group: 'commons-codec', name: 'commons-codec', version: '1.10'
+    compile group: 'com.google.guava', name: 'guava', version: '23.0'
+
+}
