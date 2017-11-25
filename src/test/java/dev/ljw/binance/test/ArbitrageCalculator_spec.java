@@ -27,60 +27,20 @@ public class ArbitrageCalculator_spec {
     depthEventBnbBtc.setSymbol("BNBBTC");
     depthEventBnbBtc.setUpdateId(1);
     depthEventBnbBtc.setBids(OrderBookEntryFactory.make(Arrays.asList("20", "100", "10", "101")));
-    depthEventBnbBtc.setAsks(OrderBookEntryFactory.make(Arrays.asList("23,", "800", "24", "801")));
-    {
-      OrderBookEntry orderBookEntryBid1 = OrderBookEntryFactory.make(
-        "20", "100");
-      OrderBookEntry orderBookEntryBid2 = OrderBookEntryFactory.make(
-        "10", "101");
-      // asks
-      OrderBookEntry orderBookEntryAsk1 = OrderBookEntryFactory.make(
-        "23", "800");
-      OrderBookEntry orderBookEntryAsk2 = OrderBookEntryFactory.make(
-        "24", "801");
+    depthEventBnbBtc.setAsks(OrderBookEntryFactory.make(Arrays.asList("23", "800", "24", "801")));
 
+    depthEventEthBtc = new DepthEvent();
+    depthEventEthBtc.setSymbol("ETHBTC");
+    depthEventEthBtc.setUpdateId(1);
+    depthEventEthBtc.setBids(OrderBookEntryFactory.make(Arrays.asList("30", "100", "31", "101")));
+    depthEventEthBtc.setAsks(OrderBookEntryFactory.make(Arrays.asList("32", "800", "33", "801")));
 
-    }
+    depthEventBnbEth = new DepthEvent();
+    depthEventBnbEth.setSymbol("BNBETH");
+    depthEventBnbEth.setUpdateId(1);
+    depthEventBnbEth.setBids(OrderBookEntryFactory.make(Arrays.asList("35", "100", "36", "101")));
+    depthEventBnbEth.setAsks(OrderBookEntryFactory.make(Arrays.asList("40", "800", "41", "801")));
 
-    {
-      depthEventEthBtc = new DepthEvent();
-      depthEventEthBtc.setSymbol("ETHBTC");
-      depthEventEthBtc.setUpdateId(1);
-
-      OrderBookEntry orderBookEntryBid1 = OrderBookEntryFactory.make(
-        "30", "100");
-      OrderBookEntry orderBookEntryBid2 = OrderBookEntryFactory.make(
-        "31", "101");
-      // asks
-      OrderBookEntry orderBookEntryAsk1 = OrderBookEntryFactory.make(
-        "32", "800");
-      OrderBookEntry orderBookEntryAsk2 = OrderBookEntryFactory.make(
-        "33", "801");
-
-      depthEventEthBtc.setBids(Arrays.asList(orderBookEntryBid1, orderBookEntryBid2));
-      depthEventEthBtc.setAsks(Arrays.asList(orderBookEntryAsk1, orderBookEntryAsk2));
-
-    }
-
-    {
-      depthEventBnbEth = new DepthEvent();
-      depthEventBnbEth.setSymbol("BNBETH");
-      depthEventBnbEth.setUpdateId(1);
-
-      OrderBookEntry orderBookEntryBid1 = OrderBookEntryFactory.make(
-        "30", "100");
-      OrderBookEntry orderBookEntryBid2 = OrderBookEntryFactory.make(
-        "31", "101");
-      // asks
-      OrderBookEntry orderBookEntryAsk1 = OrderBookEntryFactory.make(
-        "32", "800");
-      OrderBookEntry orderBookEntryAsk2 = OrderBookEntryFactory.make(
-        "33", "801");
-
-      depthEventBnbEth.setBids(Arrays.asList(orderBookEntryBid1, orderBookEntryBid2));
-      depthEventBnbEth.setAsks(Arrays.asList(orderBookEntryAsk1, orderBookEntryAsk2));
-
-    }
   }
 
   @Nested
