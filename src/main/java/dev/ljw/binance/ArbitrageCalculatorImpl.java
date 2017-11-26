@@ -33,7 +33,7 @@ public class ArbitrageCalculatorImpl implements ArbitrageCalculator {
     trade.quantity = exchangeTarget.getBestBid().getValue();
     BigDecimal bidPrice = exchangeTarget.getBestBid().getKey();
     if (bidPrice.compareTo(trades.getLast().quantity) == -1) {
-      // adjust the original quantity
+      // The price is less than available quantity. So adjust the original quantity
       trades.getLast().quantity = bidPrice;
     }
     else {
