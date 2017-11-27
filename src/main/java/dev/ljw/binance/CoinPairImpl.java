@@ -21,6 +21,16 @@ public class CoinPairImpl implements CoinPair {
     return symbol;
   }
 
+  @Override
+  public boolean hasAsks() {
+    return !asks.isEmpty();
+  }
+
+  @Override
+  public boolean hasBids() {
+    return !bids.isEmpty();
+  }
+
   public CoinPairImpl(String symbol) {
     this.symbol = symbol;
   }

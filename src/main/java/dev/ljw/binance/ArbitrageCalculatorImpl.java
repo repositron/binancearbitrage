@@ -1,7 +1,10 @@
 package dev.ljw.binance;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.LinkedList;
+import java.util.ListIterator;
+import java.util.Map;
 
 public class ArbitrageCalculatorImpl implements ArbitrageCalculator {
   private LinkedList<Trade> trades = new LinkedList<>();
@@ -11,12 +14,12 @@ public class ArbitrageCalculatorImpl implements ArbitrageCalculator {
 
   public static ArbitrageCalculator startTrade(CoinPair coinPair) {
     ArbitrageCalculatorImpl w = new ArbitrageCalculatorImpl();
-
+    Map.Entry<BigDecimal, BigDecimal> bestAsk = coinPair.getBestAsk();
     Trade trade = new Trade();
     trade.coinPair = coinPair;
     trade.currency = coinPair.symbol().substring(0, 3);
-    trade.price = coinPair.getBestAsk().getKey();
-    trade.quantity = coinPair.getBestAsk().getValue();
+    trade.price = bestAsk.getKey();
+    trade.quantity = bestAsk.getValue();
     w.trades.add(trade);
     return w;
   }
@@ -31,17 +34,40 @@ public class ArbitrageCalculatorImpl implements ArbitrageCalculator {
     trade.coinPair = exchangeTarget;
     trade.currency = exchangeTarget.symbol().substring(3);
     trade.quantity = exchangeTarget.getBestBid().getValue();
+
+    // P
     BigDecimal bidPrice = exchangeTarget.getBestBid().getKey();
-    if (bidPrice.compareTo(trades.getLast().quantity) == -1) {
-      // The price is less than available quantity. So adjust the original quantity
-      trades.getLast().quantity = bidPrice;
+    // P * Q
+    BigDecimal requiredTotal = exchangeTarget.getBestBid().getKey().
+      multiply(exchangeTarget.getBestBid().getValue());
+
+    BigDecimal availableCoin = trades.getLast().quantity;
+
+    trade.price = bidPrice;
+
+    if (availableCoin.compareTo(requiredTotal) <= 0) {
+      // need to reduce quantity of this trade as not enough coin
+      trade.quantity = availableCoin.divide(bidPrice, MathContext.DECIMAL64);
     }
     else {
-      bidPrice = trades.getLast().quantity;
+      // we have more than is required to exchange for this coin
+      // so we need to reduce previous trades
+      reducePreviousQuantities(requiredTotal);
     }
-    trade.price = bidPrice;
+
     trades.add(trade);
     return this;
+  }
+
+  private void reducePreviousQuantities(BigDecimal newQuantity) {
+    ListIterator<Trade> i = trades.listIterator(trades.size());
+    BigDecimal quantity = newQuantity;
+    while (i.hasPrevious()) {
+      Trade trade = i.previous();
+      trade.quantity = quantity;
+      BigDecimal total = trade.quantity.multiply(trade.price);
+      quantity = total; // to change previous trade quantity
+    }
   }
 
   @Override
@@ -56,8 +82,9 @@ public class ArbitrageCalculatorImpl implements ArbitrageCalculator {
 
   @Override
   public BigDecimal getProfit() {
-    return trades.getLast().quantity.subtract(trades.getFirst().quantity);
-  };
+    BigDecimal startPrice = trades.getFirst().quantity.multiply(trades.getFirst().price);
+    return trades.getLast().quantity.subtract(startPrice);
+  }
 
   @Override
   public String currency() {

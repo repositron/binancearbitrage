@@ -11,4 +11,7 @@ public interface CoinPair {
   Map.Entry<BigDecimal, BigDecimal> getBestAsk(); //sell
   Map.Entry<BigDecimal, BigDecimal> getBestBid(); //buy
   String symbol();
+
+  boolean hasAsks();
+  boolean hasBids();
 }
