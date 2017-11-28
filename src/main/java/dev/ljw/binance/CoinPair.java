@@ -7,9 +7,12 @@ import java.util.Map;
 import java.util.NavigableMap;
 
 public interface CoinPair {
-  void update(DepthEvent depthEvent);
+  boolean update(DepthEvent depthEvent);
   Map.Entry<BigDecimal, BigDecimal> getBestAsk(); //sell
   Map.Entry<BigDecimal, BigDecimal> getBestBid(); //buy
+
+  long eventTime();
+
   String symbol();
 
   boolean hasAsks();

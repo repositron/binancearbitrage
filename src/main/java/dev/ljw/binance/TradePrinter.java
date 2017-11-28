@@ -1,7 +1,8 @@
 package dev.ljw.binance;
 
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.LinkedList;
 
 public interface TradePrinter {
-  void print(List<Trade> trades);
+  void print(LinkedList<Trade> trades, BigDecimal profit);
 }

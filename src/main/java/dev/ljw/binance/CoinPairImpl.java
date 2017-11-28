@@ -15,6 +15,12 @@ public class CoinPairImpl implements CoinPair {
     new TreeMap<>(Comparator.reverseOrder());
 
   private String symbol;
+  private long eventTime;
+
+  @Override
+  public long eventTime() {
+    return eventTime;
+  }
 
   @Override
   public String symbol() {
@@ -36,14 +42,16 @@ public class CoinPairImpl implements CoinPair {
   }
 
   @Override
-  public void update(DepthEvent depthEvent) {
+  public boolean update(DepthEvent depthEvent) {
     if (depthEvent.getUpdateId() == this.lastUpdateId)
-      return;
+      return false;
 
+    eventTime = depthEvent.getEventTime();
     lastUpdateId = depthEvent.getUpdateId();
     updateOrderBook(asks, depthEvent.getAsks());
     updateOrderBook(bids, depthEvent.getBids());
     System.out.println(symbol);
+    return true;
   }
 
   @Override

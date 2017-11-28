@@ -35,16 +35,12 @@ public class ArbitrageCalculatorImpl implements ArbitrageCalculator {
     trade.currency = exchangeTarget.symbol().substring(3);
     trade.quantity = exchangeTarget.getBestBid().getValue();
 
-    // P
     BigDecimal bidPrice = exchangeTarget.getBestBid().getKey();
-    // P * Q
     BigDecimal requiredTotal = exchangeTarget.getBestBid().getKey().
-      multiply(exchangeTarget.getBestBid().getValue());
-
+      multiply(exchangeTarget.getBestBid().getValue());   // P * Q
     BigDecimal availableCoin = trades.getLast().quantity;
 
     trade.price = bidPrice;
-
     if (availableCoin.compareTo(requiredTotal) <= 0) {
       // need to reduce quantity of this trade as not enough coin
       trade.quantity = availableCoin.divide(bidPrice, MathContext.DECIMAL64);
@@ -54,7 +50,6 @@ public class ArbitrageCalculatorImpl implements ArbitrageCalculator {
       // so we need to reduce previous trades
       reducePreviousQuantities(requiredTotal);
     }
-
     trades.add(trade);
     return this;
   }
@@ -82,6 +77,10 @@ public class ArbitrageCalculatorImpl implements ArbitrageCalculator {
 
   @Override
   public BigDecimal getProfit() {
+    if (!trades.getFirst().coinPair.symbol().substring(3).equals(trades.getLast().coinPair.symbol().substring(3))) {
+      throw new ArbitrageException("Incompatiable trade: " + trades.getFirst().coinPair.symbol().substring(3)  + " -> " +
+        trades.getLast().coinPair.symbol().substring(3));
+    }
     BigDecimal startPrice = trades.getFirst().quantity.multiply(trades.getFirst().price);
     return trades.getLast().quantity.subtract(startPrice);
   }
