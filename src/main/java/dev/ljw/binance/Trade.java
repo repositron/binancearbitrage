@@ -11,4 +11,6 @@ public class Trade {
   public OrderBookEntry orderBookEntry;
   public BigDecimal price;
   public BigDecimal quantity;
+  public enum Type {Buy, Sell}
+  public Type type;
 }

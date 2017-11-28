@@ -7,9 +7,11 @@ import dev.ljw.binance.CoinPairImpl;
 import dev.ljw.binance.ArbitrageCalculatorImpl;
 import dev.ljw.binance.test.tools.OrderBookEntryFactory;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -54,7 +56,7 @@ public class ArbitrageCalculatorImpl_spec {
     depthEventBnbBtc = new DepthEvent();
     depthEventBnbBtc.setSymbol("BNBBTC");
     depthEventBnbBtc.setUpdateId(1);
-    depthEventBnbBtc.setBids(OrderBookEntryFactory.make(Arrays.asList("20", "100")));
+    depthEventBnbBtc.setBids(OrderBookEntryFactory.make(Arrays.asList()));
 
     // #1 BUY BNB 10 for 20 *10 BTC
     depthEventBnbBtc.setAsks(OrderBookEntryFactory.make(Arrays.asList("20", "10")));
@@ -65,14 +67,14 @@ public class ArbitrageCalculatorImpl_spec {
 
     // #2 SELL 4*2.5 = 10 BNB and receive ETH 2.5
     depthEventBnbEth.setBids(OrderBookEntryFactory.make(Arrays.asList("4", "2.5")));
-    depthEventBnbEth.setAsks(OrderBookEntryFactory.make(Arrays.asList("20", "800")));
+    depthEventBnbEth.setAsks(OrderBookEntryFactory.make(Arrays.asList()));
 
     depthEventEthBtc = new DepthEvent();
     depthEventEthBtc.setSymbol("ETHBTC");
     depthEventEthBtc.setUpdateId(1);
     // #3 SELL 0.0125 * 200 = 25 ETH and receive 200 BTC
-    depthEventEthBtc.setBids(OrderBookEntryFactory.make(Arrays.asList("0.0125", "200")));
-    depthEventEthBtc.setAsks(OrderBookEntryFactory.make(Arrays.asList("32", "800")));
+    depthEventEthBtc.setBids(OrderBookEntryFactory.make(Arrays.asList("5", "200")));
+    depthEventEthBtc.setAsks(OrderBookEntryFactory.make(Arrays.asList()));
   }
 
   private void createProfitableDepthEvent2() {
@@ -104,23 +106,21 @@ public class ArbitrageCalculatorImpl_spec {
     depthEventBnbBtc.setUpdateId(1);
     depthEventBnbBtc.setBids(OrderBookEntryFactory.make(Arrays.asList("20", "100")));
 
-    // #1 BUY BNB 10 for 20 *10 BTC
     depthEventBnbBtc.setAsks(OrderBookEntryFactory.make(Arrays.asList("20", "10")));
 
     depthEventBnbEth = new DepthEvent();
     depthEventBnbEth.setSymbol("BNBETH");
     depthEventBnbEth.setUpdateId(1);
 
-    // #2 SELL 4*2.5 = 10 BNB and receive ETH 2.5
-    depthEventBnbEth.setBids(OrderBookEntryFactory.make(Arrays.asList("4", "2.5")));
-    depthEventBnbEth.setAsks(OrderBookEntryFactory.make(Arrays.asList("20", "800")));
+    depthEventBnbEth.setBids(OrderBookEntryFactory.make(Arrays.asList("4", "20")));
+    depthEventBnbEth.setAsks(OrderBookEntryFactory.make(Arrays.asList()));
 
     depthEventEthBtc = new DepthEvent();
     depthEventEthBtc.setSymbol("ETHBTC");
     depthEventEthBtc.setUpdateId(1);
-    // #3 SELL 0.0125 * 100 = 2.5 ETH and receive 100 BTC
+
     depthEventEthBtc.setBids(OrderBookEntryFactory.make(Arrays.asList("0.025", "100")));
-    depthEventEthBtc.setAsks(OrderBookEntryFactory.make(Arrays.asList("32", "800")));
+    depthEventEthBtc.setAsks(OrderBookEntryFactory.make(Arrays.asList()));
   }
 
   @Nested
@@ -157,21 +157,6 @@ public class ArbitrageCalculatorImpl_spec {
 
       assertEquals("ETH", arbitrageCalculator.currency());
     }
-
-    @Test
-    public void has_price_of_highest_bid() {
-      createProfitableDepthEvent();
-      CoinPair bnbbtc = new CoinPairImpl("BNBBTC");
-      bnbbtc.update(depthEventBnbBtc);
-      ArbitrageCalculator arbitrageCalculator = ArbitrageCalculatorImpl.startTrade(bnbbtc);
-
-      CoinPair bnbeth = new CoinPairImpl("BNBETH");
-      bnbeth.update(depthEventBnbEth);
-      arbitrageCalculator.takeBid(bnbeth);
-
-      assertEquals(new BigDecimal("40"), arbitrageCalculator.getPrice());
-      assertEquals(new BigDecimal("2.5"), arbitrageCalculator.getQuantity());
-    }
   }
 
   @Nested
@@ -196,7 +181,7 @@ public class ArbitrageCalculatorImpl_spec {
     }
 
     @Test
-    public void at_first_takebid_decreases_current_quantity() {
+    public void at_first_takebid_no_change_to_current_quantity() {
       createProfitableDepthEvent();
       CoinPair bnbbtc = new CoinPairImpl("BNBBTC");
       bnbbtc.update(depthEventBnbBtc);
@@ -206,11 +191,11 @@ public class ArbitrageCalculatorImpl_spec {
       bnbeth.update(depthEventBnbEth);
       assertEquals("5", bnbeth.getBestBid().getValue().toString());
       arbitrageCalculator.takeBid(bnbeth);
-      assertEquals("2.5", arbitrageCalculator.getTrades().getLast().quantity.toString());
+      assertEquals("5", arbitrageCalculator.getTrades().getLast().quantity.toString());
     }
 
     @Test
-    public void at_second_takebid_decreases_current_quantity() {
+    public void at_second_takebid_no_change_to_current_quantity_profit_is_50() {
       createProfitableDepthEvent();
       CoinPair bnbbtc = new CoinPairImpl("BNBBTC");
       bnbbtc.update(depthEventBnbBtc);
@@ -219,20 +204,22 @@ public class ArbitrageCalculatorImpl_spec {
       CoinPair bnbeth = new CoinPairImpl("BNBETH");
       bnbeth.update(depthEventBnbEth);
       arbitrageCalculator.takeBid(bnbeth);
+      assertEquals("5", arbitrageCalculator.getTrades().getLast().quantity.toString());
 
       CoinPair etcbtc = new CoinPairImpl("ETHBTC");
       etcbtc.update(depthEventEthBtc);
       assertEquals("20", etcbtc.getBestBid().getValue().toString());
       arbitrageCalculator.takeBid(etcbtc);
-      assertEquals("1", arbitrageCalculator.getTrades().getLast().quantity.toString());
+      assertEquals("20", arbitrageCalculator.getTrades().getLast().quantity.toString());
       arbitrageCalculator.complete();
+      assertEquals("35.0", arbitrageCalculator.getProfit().toString());
     }
   }
 
   @Nested
   public class profitable_depthEvent2_trades_BNBBTC_BNBETH_ETCBTC {
     @Test
-    public void has_profit_of_3point52BTC() {
+    public void has_profit_of_23point98BTC() {
       createProfitableDepthEvent2();
       CoinPair bnbbtc = new CoinPairImpl("BNBBTC");
       bnbbtc.update(depthEventBnbBtc);
@@ -246,8 +233,8 @@ public class ArbitrageCalculatorImpl_spec {
       etcbtc.update(depthEventEthBtc);
       arbitrageCalculator.takeBid(etcbtc);
       arbitrageCalculator.complete();
-      // 4 - (0.01BTC *48BNB)
-      assertEquals("3.52", arbitrageCalculator.getProfit().toString());
+
+      assertEquals("23.98", arbitrageCalculator.getProfit().toString());
 
     }
 
@@ -262,11 +249,11 @@ public class ArbitrageCalculatorImpl_spec {
       bnbeth.update(depthEventBnbEth);
       assertEquals("300", arbitrageCalculator.getTrades().getFirst().quantity.toString());
       arbitrageCalculator.takeBid(bnbeth);
-      assertEquals("80", arbitrageCalculator.getTrades().getFirst().quantity.toString());
+      assertEquals("40", arbitrageCalculator.getTrades().getFirst().quantity.toString());
     }
 
     @Test
-    public void reduces_ETC_24_and_BNB_to_58_on_second_takeBid() {
+    public void reduces_BNB_to_2_on_second_takeBid() {
       createProfitableDepthEvent2();
       CoinPair bnbbtc = new CoinPairImpl("BNBBTC");
       bnbbtc.update(depthEventBnbBtc);
@@ -280,10 +267,9 @@ public class ArbitrageCalculatorImpl_spec {
       etcbtc.update(depthEventEthBtc);
       arbitrageCalculator.takeBid(etcbtc);
       arbitrageCalculator.complete();
-      // ETH
-      assertEquals("24", arbitrageCalculator.getTrades().get(1).quantity.toString());
-      // BNB
-      assertEquals("48", arbitrageCalculator.getTrades().get(0).quantity.toString());
+      assertEquals("2", arbitrageCalculator.getTrades().get(0).quantity.toString());
+      assertEquals("2", arbitrageCalculator.getTrades().get(1).quantity.toString());
+      assertEquals("4", arbitrageCalculator.getTrades().get(2).quantity.toString());
     }
   }
 
@@ -303,14 +289,14 @@ public class ArbitrageCalculatorImpl_spec {
       etcbtc.update(depthEventEthBtc);
       arbitrageCalculator.takeBid(etcbtc);
       arbitrageCalculator.complete();
-      assertEquals("0", arbitrageCalculator.getProfit().toString());
+      assertEquals("0.0", arbitrageCalculator.getProfit().toString());
     }
   }
 
   @Nested
   public class lose_depthEvent_trades_BNBBTC_BNBETH_ETCBTC {
     @Test
-    public void makes_100_BTC_lose() {
+    public void makes_199_BTC_loss() {
       createLoseDepthEvent();
       CoinPair bnbbtc = new CoinPairImpl("BNBBTC");
       bnbbtc.update(depthEventBnbBtc);
@@ -325,15 +311,23 @@ public class ArbitrageCalculatorImpl_spec {
       arbitrageCalculator.takeBid(etcbtc);
       arbitrageCalculator.complete();
 
-      assertEquals(new BigDecimal(-100), arbitrageCalculator.getProfit());
+      assertEquals("-199.000", arbitrageCalculator.getProfit().toString());
     }
   }
 
   @Nested
   public class If_no_asks_or_bids {
-    @Test
+    @Disabled
     public void dont_throw() {
-
+      DepthEvent depthEvent = new DepthEvent();
+      depthEvent.setSymbol("BNBBTC");
+      depthEvent.setUpdateId(1);
+      depthEvent.setBids(OrderBookEntryFactory.make(Arrays.asList()));
+      depthEvent.setAsks(OrderBookEntryFactory.make(Arrays.asList("0.01", "300")));
+      CoinPair bnbbtc = new CoinPairImpl("BNBBTC");
+      bnbbtc.update(depthEvent);
+      ArbitrageCalculator arbitrageCalculator = ArbitrageCalculatorImpl.startTrade(bnbbtc);
+      assertTrue(true);
     }
   }
 }

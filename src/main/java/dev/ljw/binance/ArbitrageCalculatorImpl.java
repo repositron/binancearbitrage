@@ -20,8 +20,16 @@ public class ArbitrageCalculatorImpl implements ArbitrageCalculator {
     trade.currency = coinPair.symbol().substring(0, 3);
     trade.price = bestAsk.getKey();
     trade.quantity = bestAsk.getValue();
+    trade.type = Trade.Type.Buy;
     w.trades.add(trade);
     return w;
+  }
+
+  private BigDecimal getAvailableCoin() {
+    if (trades.getLast().type == Trade.Type.Buy)
+      return trades.getLast().quantity;
+    else
+      return trades.getLast().price.multiply(trades.getLast().quantity);
   }
 
   // sell at the best bid price. If BNBBTC -> BNBETH we sell BNB for ETH
@@ -31,19 +39,27 @@ public class ArbitrageCalculatorImpl implements ArbitrageCalculator {
       throw new ArbitrageException(currency() + " can't be sold at " + exchangeTarget.symbol() + ".");
     }
     Trade trade = new Trade();
+    trade.type = Trade.Type.Sell;
     trade.coinPair = exchangeTarget;
-    trade.currency = exchangeTarget.symbol().substring(3);
+    trade.currency = exchangeTarget.symbol().substring(3); // currency we buy and what we receive on a sell
     trade.quantity = exchangeTarget.getBestBid().getValue();
 
-    BigDecimal bidPrice = exchangeTarget.getBestBid().getKey();
-    BigDecimal requiredTotal = exchangeTarget.getBestBid().getKey().
-      multiply(exchangeTarget.getBestBid().getValue());   // P * Q
-    BigDecimal availableCoin = trades.getLast().quantity;
+    // Example BNBETH currency = ETH  ; SELL BNB to get ETH
+    BigDecimal bidPrice = exchangeTarget.getBestBid().getKey(); // P ETH price per BNB
+    BigDecimal requiredTotal = exchangeTarget.getBestBid().getValue();   // total BNB Q
+
+    // from previous trade BNB
+    BigDecimal availableCoin = trades.getLast().type == Trade.Type.Buy ?
+      trades.getLast().quantity :
+      trades.getLast().price.multiply(trades.getLast().quantity);
 
     trade.price = bidPrice;
     if (availableCoin.compareTo(requiredTotal) <= 0) {
       // need to reduce quantity of this trade as not enough coin
-      trade.quantity = availableCoin.divide(bidPrice, MathContext.DECIMAL64);
+      if (trade.type == Trade.Type.Buy)
+        trade.quantity = availableCoin;
+      else
+        trade.quantity = availableCoin;
     }
     else {
       // we have more than is required to exchange for this coin
@@ -59,8 +75,12 @@ public class ArbitrageCalculatorImpl implements ArbitrageCalculator {
     BigDecimal quantity = newQuantity;
     while (i.hasPrevious()) {
       Trade trade = i.previous();
-      trade.quantity = quantity;
-      BigDecimal total = trade.quantity.multiply(trade.price);
+      if (trade.type == Trade.Type.Buy)
+        trade.quantity = quantity;
+      else {
+        trade.quantity = newQuantity.divide(trade.price, MathContext.DECIMAL32);
+      }
+      BigDecimal total = trade.quantity;
       quantity = total; // to change previous trade quantity
     }
   }
@@ -81,8 +101,9 @@ public class ArbitrageCalculatorImpl implements ArbitrageCalculator {
       throw new ArbitrageException("Incompatiable trade: " + trades.getFirst().coinPair.symbol().substring(3)  + " -> " +
         trades.getLast().coinPair.symbol().substring(3));
     }
-    BigDecimal startPrice = trades.getFirst().quantity.multiply(trades.getFirst().price);
-    return trades.getLast().quantity.subtract(startPrice);
+    BigDecimal startTotal = trades.getFirst().quantity.multiply(trades.getFirst().price);
+    BigDecimal endTotal = trades.getLast().quantity.multiply(trades.getLast().price);
+    return endTotal.subtract(startTotal);
   }
 
   @Override
