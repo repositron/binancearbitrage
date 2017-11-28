@@ -47,9 +47,10 @@ public class BinanceArbitrage {
           takeBid(bnbeth).
           takeBid(ethbtc).
           complete();
-        if (arbitrage.getProfit().compareTo(BigDecimal.ZERO) > 0) {
+
+        if (arbitrage.getProfit().compareTo(BigDecimal.ZERO) > 0)
           tradePrinter.print(arbitrage.getTrades(), arbitrage.getProfit());
-        }
+
       } catch (Exception ex) {
         System.out.println("An error occurred: " + ex);
       }
@@ -57,12 +58,6 @@ public class BinanceArbitrage {
   }
 
   public static void main(String[] args) {
-    //  BNBBTC can buy BNB using BTC, and sell BNB receiving BTC
-    //  ETCBTC: Buy ETC using BTC -> BNBETC buy BNB using ETC
-    // BNBBTC -> BNBETC ... buy BNBBTC -> sell BNBETC (receiving ETC)
-    // BNBETC -> ETCBTC
-    // BNBETC -> BNBBTC
-
     String bnbbtcStr = "BNBBTC";
     String bnbethStr = "BNBETH";
     String ethbtcStr = "ETHBTC";
