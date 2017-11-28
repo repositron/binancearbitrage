@@ -26,8 +26,8 @@ public class TradePrinterImpl implements TradePrinter {
     return bd.toPlainString();
   }
 
-  private static String printTime(long timeStampSeconds) {
-    return Instant.ofEpochMilli(timeStampSeconds).toString();
+  private static String printTime(long timeStampMilliseconds) {
+    return Instant.ofEpochMilli(timeStampMilliseconds).toString();
   }
 
   @Override

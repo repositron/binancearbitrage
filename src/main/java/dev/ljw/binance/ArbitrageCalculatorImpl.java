@@ -56,10 +56,7 @@ public class ArbitrageCalculatorImpl implements ArbitrageCalculator {
     trade.price = bidPrice;
     if (availableCoin.compareTo(requiredTotal) <= 0) {
       // need to reduce quantity of this trade as not enough coin
-      if (trade.type == Trade.Type.Buy)
-        trade.quantity = availableCoin;
-      else
-        trade.quantity = availableCoin;
+      trade.quantity = availableCoin;
     }
     else {
       // we have more than is required to exchange for this coin
@@ -80,8 +77,7 @@ public class ArbitrageCalculatorImpl implements ArbitrageCalculator {
       else {
         trade.quantity = newQuantity.divide(trade.price, MathContext.DECIMAL32);
       }
-      BigDecimal total = trade.quantity;
-      quantity = total; // to change previous trade quantity
+      quantity = trade.quantity; // to change previous trade quantity
     }
   }
 
